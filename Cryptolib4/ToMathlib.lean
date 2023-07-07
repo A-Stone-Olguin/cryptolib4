@@ -40,3 +40,20 @@ lemma range_pos_ne_zero (n : ℕ) (n_pos : 0 < n) : Multiset.range n ≠ 0 := by
 def IsCyclic.generator {G : Type} [Group G] [IsCyclic G] (g : G): Prop := 
   ∀ (x : G), x ∈ Subgroup.zpowers g
 
+
+namespace Bitvec
+
+
+instance : ∀ (n : ℕ), Fintype (Bitvec n) := by 
+  intro n; exact Vector.fintype
+
+lemma card (n : ℕ) : Fintype.card (Bitvec n) = 2^n := card_vector n
+
+lemma multiset_ne_zero (n : ℕ) : (instForAllNatFintypeBitvec n).elems.val ≠ 0 := by 
+  apply (Multiset.card_pos).mp 
+  have h : Multiset.card ((instForAllNatFintypeBitvec n).elems.val) = 2^n := Bitvec.card n
+  rw [h]
+  simp
+
+
+end Bitvec
