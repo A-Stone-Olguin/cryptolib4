@@ -57,3 +57,19 @@ lemma multiset_ne_zero (n : ℕ) : (instForAllNatFintypeBitvec n).elems.val ≠ 
 
 
 end Bitvec
+
+
+namespace ZMod
+
+-- TODO Add ZMod Group Instance
+
+end ZMod
+
+
+-- In Lupo's code, the mem_zpowers_iff lemma is already implemented in Mathlib
+
+-- This is division algorithm... is it already implemented?
+lemma exists_mod_add_div (a b : ℕ) : ∃ (m : ℕ), a = a % b + b * m := by 
+  use (a/b)
+  exact (Nat.mod_add_div a b).symm
+
