@@ -73,3 +73,17 @@ lemma exists_mod_add_div (a b : ℕ) : ∃ (m : ℕ), a = a % b + b * m := by
   use (a/b)
   exact (Nat.mod_add_div a b).symm
 
+
+namespace Group
+
+variable (G : Type) [i1 : Fintype G] [i2 : Group G]
+
+lemma multiset_ne_zero : (@Fintype.elems G).val ≠ 0 := by 
+  have e : G := (i2.one)
+  have h1 : e ∈ (@Fintype.elems G).val := Finset.mem_univ e 
+  have h2 : 0 < Multiset.card (@Fintype.elems G).val := by
+    apply (Multiset.card_pos_iff_exists_mem).mpr
+    exact Exists.intro e h1
+  exact Multiset.card_pos.mp h2
+
+end Group
