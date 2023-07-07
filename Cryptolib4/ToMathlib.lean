@@ -74,9 +74,10 @@ lemma exists_mod_add_div (a b : ℕ) : ∃ (m : ℕ), a = a % b + b * m := by
   exact (Nat.mod_add_div a b).symm
 
 
+variable (G : Type) [i1 : Fintype G] [i2 : Group G]
 namespace Group
 
-variable (G : Type) [i1 : Fintype G] [i2 : Group G]
+
 
 lemma multiset_ne_zero : (@Fintype.elems G).val ≠ 0 := by 
   have e : G := (i2.one)
@@ -87,3 +88,14 @@ lemma multiset_ne_zero : (@Fintype.elems G).val ≠ 0 := by
   exact Multiset.card_pos.mp h2
 
 end Group
+
+lemma inv_pow_eq_card_sub_pow (g : G) (m : ℕ) (H : m ≤ Fintype.card G) : 
+  (g ^ m)⁻¹ = g^(Fintype.card G - m) := by 
+  have h : (g ^ m) * g ^ (Fintype.card G - m) = 1 := by 
+    rw [← pow_add]
+    rw [Nat.add_sub_of_le]
+    exact pow_card_eq_one
+    exact H
+  exact inv_eq_of_mul_eq_one_right h
+
+-- The pow_eq_mod_card lemma is already implemented in mathlib
