@@ -11,17 +11,21 @@ lemma bind_skip' (p : Pmf α) (f g : α → Pmf β) :
     simp 
     simp_rw [ha]
 
-lemma bind_skip_cons' (pa : Pmf α) (pb : Pmf β) (f : α → Pmf β) : 
+lemma bind_skip_const' (pa : Pmf α) (pb : Pmf β) (f : α → Pmf β) : 
   (∀ (a : α), f a = pb) → pa.bind f = pb := by 
     intro ha 
     ext 
     simp 
     simp_rw [ha]
-    simp [NNReal.tsum_mul_right]
+    simp [ENNReal.tsum_mul_right]
 
-    sorry
 
-def Tactic.Interactive.bind_skip (x : parse (TK "with" *> Ident)?) : Tactic Unit := 
-  do `[apply bind_skip'] 
-    let a := x.get_or_else `_ 
-    Tactic.Interactive.intro a
+syntax "bind_skip" : tactic 
+
+macro_rules 
+  | `(tactic| bind_skip) => `(tactic| apply bind_skip' <;> intro a)
+
+syntax "bind_skip_const" : tactic 
+
+macro_rules 
+  | `(tactic| bind_skip_const) => `(tactic| apply bind_skip_const' <;> intro a)
