@@ -16,9 +16,6 @@ def negligible' (f : ℕ → ℝ) :=
   ∀ (c : ℝ), ∃ (n₀ : ℕ), ∀ (n : ℕ),
   0 < c → n₀ ≤ n → abs (f n) < 1 / n^c 
 
-example  (n k₀ : ℕ):(n : ℝ)^(k₀ : ℝ) = (n : ℝ)^k₀ := by exact?
-example (c : ℕ) (hc : c > 0): 0 < c := by exact?
-
 lemma negl_equiv (f : ℕ → ℝ) : negligible f ↔ negligible' f := by 
   apply Iff.intro 
   -- → case
@@ -37,7 +34,7 @@ lemma negl_equiv (f : ℕ → ℝ) : negligible f ↔ negligible' f := by
     have n₀_pos : 0 < n₀ := le_max_right n' 1
     have n'_leq_n₀ : n' ≤ n₀ := le_max_left n' 1 
     use n₀ 
-    intro n c_pos hn 
+    intro n _ hn 
     have hnnn : n' ≤ n := by linarith
     have b : (n : ℝ)^c ≤ (n:ℝ)^(k₀ : ℝ) := 
       by apply Real.rpow_le_rpow_of_exponent_le <;> norm_cast <;> repeat linarith
@@ -60,3 +57,11 @@ lemma negl_equiv (f : ℕ → ℝ) : negligible f ↔ negligible' f := by
     use n₀ 
     intro n hn
     exact hn₀ n hc hn
+
+lemma zero_negl : negligible (λ _ => 0) := by 
+  intro c _ 
+  use 1 
+  intro n hn 
+  norm_num
+  have npos : n > 0 := by linarith
+  exact Real.rpow_pos_of_pos (Nat.cast_pos.mpr npos) c
