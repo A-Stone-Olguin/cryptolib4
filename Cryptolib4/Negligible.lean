@@ -66,47 +66,6 @@ lemma zero_negl : negligible (λ _ => 0) := by
   have npos : n > 0 := by linarith
   exact Real.rpow_pos_of_pos (Nat.cast_pos.mpr npos) c
 
-#check Nat.cast_le.mpr
-
-#check lt_of_lt_of_le
-
-example (n m x: ℝ) (hnm : n < m) (hmx : m < x) : n < x := by exact gt_trans hmx hnm
--- example (n m x: ℝ) (hnm : n < m) (hmx : m < x) : c > 0 → m * c = n *c → m= n  := by apply?
-example (n m x y: ℝ) (hnm : n ≤ m ) :n * x ≤ m * x := by refine Iff.mpr (mul_le_mul_right ?a0) hnm 
-example (n : ℕ) (c : ℕ) (hc : c > 0) (hn : n > 0) (hcn0 : c ≠ 0): n^(c+1) = n * n^c := by exact Nat.pow_succ'
-example (n : ℝ) (c : ℝ) (hn : n > 0) : n^(c+1) = n^c * n := by
-  apply Real.rpow_add_one (ne_of_gt hn)
-
-example (n : ℝ) (c : ℝ) (hn : n ≥ 2) : n^(c+1) = n^c * n := by
-  apply Real.rpow_add_one (ne_of_gt (lt_of_lt_of_le  two_pos hn))
-
-   
-
-
-example (n c : ℝ) (hn : n > 0) (hc : c > 0): 1/n = 1/c → n = c :=by 
-  intro h 
-  simp at h
-  exact h
-
-example (n c : ℝ) (hn : n > 0) (hc : c > 0): n=c → 1/n = 1/c :=by 
-  intro h
-  simp 
-  exact h
-
-example (n : ℝ) (c : ℝ) (hn : n > 0) : 1/n^(c+1) = 1/n^c * 1/n^1 := by
-  ring_nf
-  apply Real.rpow_neg
-
-example (n : ℝ) (hn :n > 0) (hpos :  0 < (n^c)): 0 < (n^c)⁻¹  := by exact Iff.mpr inv_pos hpos
-
-#check Real.rpow_add
-#check Real.rpow_neg
-#check one_div_pow
-#check Real.mul_pos
-#check Real.rpow_inv_le_iff_of_neg
-#check Real.rpow_pos_of_pos
-#check Nat.cast_div
-
 lemma negl_add_negl_negl {f g : ℕ → ℝ} : negligible f → negligible g → negligible (f + g) := by 
   intro hf hg c hc 
   have hc1 : 0 < (c + 1) := add_pos hc one_pos
@@ -146,8 +105,12 @@ lemma negl_add_negl_negl {f g : ℕ → ℝ} : negligible f → negligible g →
     apply le_max_right 
   have hlt :  1/n ≤ 1/2 := by refine Nat.div_le_div_left h two_pos 
   have hltr : 1 / (n: ℝ) ≤ 1 / 2  := by
-    
-    sorry
+    have hnrge2 : (n : ℝ) ≥ 2 := by 
+      apply (Nat.cast_le).mpr 
+      -- exact h doesn't work?
+      linarith
+    apply Iff.mpr (one_div_le_one_div _ two_pos) hnrge2
+    exact lt_of_lt_of_le two_pos hnrge2
   have hnc : n^(c+1) = n^c * n := by 
     apply Real.rpow_add_one
     apply ne_of_gt 
