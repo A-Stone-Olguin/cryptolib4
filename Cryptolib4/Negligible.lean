@@ -31,20 +31,8 @@ lemma negl_add_negl_negl {f g : ℕ → ℝ} : negligible f → negligible g →
   use n₀ 
   intro n hn
   have tn : max nf ng ≤ n₀ := le_max_left (max nf ng) 2 
-  have h1 : nf ≤ n := by 
-    have h := le_max_left nf ng 
-    trans 
-    exact h
-    trans
-    exact tn 
-    exact hn 
-  have h2 : ng ≤ n := by
-    have h := le_max_right nf ng 
-    trans 
-    exact h
-    trans
-    exact tn 
-    exact hn 
+  have h1 : nf ≤ n := le_trans (le_max_left nf ng) (le_trans tn hn) 
+  have h2 : ng ≤ n := le_trans (le_max_right nf ng) (le_trans tn hn) 
   specialize hnf n h1 
   specialize hng n h2 
   have h_add : abs (f n) + abs (g n) < 2 / ↑n^(c + 1) := calc
@@ -52,19 +40,14 @@ lemma negl_add_negl_negl {f g : ℕ → ℝ} : negligible f → negligible g →
                         _ = 2 / ↑n ^ (c + 1) := by ring_nf
   have h_fg_add :abs ((f + g) n) = abs (f n + g n) := by exact rfl
   rw [h_fg_add]
-  apply gt_of_gt_of_ge _ (abs_add (f n) (g n))
-  apply gt_of_ge_of_gt _ h_add
+  apply gt_of_gt_of_ge (gt_of_ge_of_gt _ h_add) (abs_add (f n) (g n))
+  
   have h : n ≥ 2 := by 
     apply le_trans _ hn 
     apply le_max_right 
-  have hlt :  1/n ≤ 1/2 := by refine Nat.div_le_div_left h two_pos 
   have hltr : 1 / (n: ℝ) ≤ 1 / 2  := by
-    have hnrge2 : (n : ℝ) ≥ 2 := by 
-      apply (Nat.cast_le).mpr 
-      -- exact h doesn't work?
-      linarith
-    apply Iff.mpr (one_div_le_one_div _ two_pos) hnrge2
-    exact lt_of_lt_of_le two_pos hnrge2
+    have hnrge2 : (n : ℝ) ≥ 2 := (Nat.cast_le).mpr h 
+    exact (one_div_le_one_div (lt_of_lt_of_le two_pos hnrge2) two_pos).mpr hnrge2
   have hnc : n^(c+1) = n^c * n := by 
     apply Real.rpow_add_one
     apply ne_of_gt 
@@ -74,14 +57,12 @@ lemma negl_add_negl_negl {f g : ℕ → ℝ} : negligible f → negligible g →
     have hinv : 2/(n^c) = 2 * (n^c)⁻¹ := rfl 
     rw [hinv]
     apply Real.mul_pos two_pos 
-    apply (inv_pos).mpr 
-    apply Real.rpow_pos_of_pos
-    apply lt_of_lt_of_le two_pos
+    apply (inv_pos).mpr (Real.rpow_pos_of_pos (lt_of_lt_of_le two_pos _) _)
     norm_cast
   have hltc2 : 2/n^(c+1) ≤ 1/n^c := calc 
     2 / n^(c+1) = 2 / (n^c * n) := by rw [hnc]
               _ = 2 / n^c * 1 / n  := by ring_nf
-              _ ≤ 2 / n^c * 1/2 := by apply Iff.mpr (mul_le_mul_left _); simp at hltr; exact hltr; simp; exact h2pos
+              _ ≤ 2 / n^c * 1/2 := by apply (mul_le_mul_left _).mpr; simp at hltr; exact hltr; rw [mul_one]; exact h2pos
               _ = 1 / n^c := by ring_nf
 
   have goal : 1 / ↑n ^ c ≥ 2 / ↑n ^ (c + 1) := by 
@@ -120,8 +101,7 @@ lemma const_mul_negl_negl  {f : ℕ → ℝ} (m : ℝ) : negligible f → neglig
   · exact nat_mul_negl_negl k hf 
   · intro n
     have h : abs m ≤ abs (k : ℝ) := by refine Iff.mpr le_iff_lt_or_eq ?_; left; simp; exact hk 
-    rw [abs_mul]
-    rw [abs_mul]
+    repeat rw [abs_mul]
     exact mul_le_mul h (Eq.le rfl) (abs_nonneg (f n)) (abs_nonneg ↑k)
 
 theorem neg_exp_negl : negligible ((λ n => (1 : ℝ) / 2^n) : ℕ → ℝ) := by 
