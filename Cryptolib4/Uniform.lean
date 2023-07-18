@@ -1,5 +1,6 @@
 import Cryptolib4.ToMathlib
 import Mathlib.Probability.ProbabilityMassFunction.Uniform
+import Mathlib.Data.ZMod.Defs
 
 variable (G : Type) [Fintype G] [Group G] [DecidableEq G]
 
@@ -15,15 +16,21 @@ def uniform_bitvec (n : ℕ) : Pmf (Bitvec n) :=
 def uniform_group : Pmf G := 
   Pmf.ofMultiset (@Fintype.elems G).val (Group.multiset_ne_zero G)
 
--- Need Group instance of ZMod for this definition
--- def uniform_zmod (n : ℕ) [Fact (0 < n)] : Pmf (ZMod n) := uniform_group (ZMod n)
--- def uniform_2 : Pmf (ZMod 2) := uniform_zmod 2
+
+-- Need a proof that 2 is positive
+instance : Fact (0 < 2) where
+  out := two_pos
+
+-- We have that n is positive and not equal to zero...
+def uniform_zmod (n : ℕ) [Fact (0 < n)] [NeZero n] : Pmf (ZMod n) := uniform_group (ZMod n)
+def uniform_2 : Pmf (ZMod 2) := uniform_zmod 2 
 
 #check congr_fun
 
 lemma uniform_group_prob : 
   ∀ (g : G), (uniform_group G) g = 1 / Multiset.card (@Fintype.elems G).val := by 
   intro g 
+  
   have h1 : ↑(uniform_group G) = (λ (a : G) => 
     (Multiset.count a (@Fintype.elems G).val : NNReal) / Multiset.card (@Fintype.elems G).val) := by 
     
@@ -39,3 +46,4 @@ lemma uniform_group_prob :
   simp
 
   -- TODO need to add instance of uniform group for ZMod
+
