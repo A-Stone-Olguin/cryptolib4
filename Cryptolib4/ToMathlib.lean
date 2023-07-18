@@ -17,18 +17,13 @@ instance : Monad Pmf where
 instance : LawfulFunctor Pmf where
   id_map := Pmf.map_id
   comp_map := λ f g x => (Pmf.map_comp f x g).symm
-  map_const := sorry
+  map_const := rfl
 
 instance : LawfulMonad Pmf where
   pure_bind := Pmf.pure_bind
   bind_assoc := Pmf.bind_bind
   bind_pure_comp := Pmf.bind_pure_comp 
-  bind_map := sorry
-
-#check Pmf.map_const
-#check Pmf.map
-#check Functor.mapConst
-
+  bind_map := λ _ _ => rfl
 
 lemma range_pos_ne_zero (n : ℕ) (n_pos : 0 < n) : Multiset.range n ≠ 0 := by 
   apply (Multiset.card_pos).mp 
@@ -61,7 +56,10 @@ end Bitvec
 
 namespace ZMod
 
--- TODO Add ZMod Group Instance
+-- 0 < n fact not needed... will keep in case of future uses
+instance : ∀ (n : ℕ) [Fact (0 < n)], Group (ZMod n) := fun
+  | .zero => Multiplicative.group
+  | .succ _ => Multiplicative.group
 
 end ZMod
 
