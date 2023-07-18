@@ -105,5 +105,87 @@ lemma const_mul_negl_negl  {f : ℕ → ℝ} (m : ℝ) : negligible f → neglig
     exact mul_le_mul h (Eq.le rfl) (abs_nonneg (f n)) (abs_nonneg ↑k)
 
 theorem neg_exp_negl : negligible ((λ n => (1 : ℝ) / 2^n) : ℕ → ℝ) := by 
+  intro c hc
+  have h : (0 < c ∧ c < 1) ∨ 1 ≤ c := by 
+    apply Decidable.or_iff_not_imp_right.mpr
+    intro hnot 
+    exact And.intro hc (not_le.mp hnot)
+  cases h with
+  | inl h => 
+    cases h with
+    | intro left right => 
+    use 2 
+    intro n hn 
+    simp
+    have hinv : 0 < ((2^n: ℝ))⁻¹ := by 
+      apply inv_pos.mpr 
+      norm_num
+    have h_abs_pos : abs ((2 ^ n : ℝ) )⁻¹ = ((2 ^ n:ℝ))⁻¹ := abs_of_pos hinv 
+    rw [abs_of_pos]
+    apply (inv_lt_inv _ _ ).mpr
+    · induction n with
+    | zero => 
+      norm_cast
+    | succ n ih => 
+      sorry 
+    · norm_num
+    · apply Real.rpow_pos_of_pos
+      norm_cast
+      exact lt_of_lt_of_le two_pos hn
+    · norm_num
+
+  | inr h => 
+    use 1 
+    intro n hn
+    simp
+    have h_abs_pos : abs ((2 ^ n : ℝ) )⁻¹ = ((2 ^ n:ℝ))⁻¹ := abs_of_pos hinv 
+    rw [abs_of_pos]
+    apply (inv_lt_inv _ _ ).mpr
+    induction n with
+    | zero => contradiction
+    | succ n ih => 
+      sorry
+
+  -- have h_or : 0 < c < 1 ∨ 1 < c := by sorry
+
+
+
+  have arch := exists_nat_gt c 
+  cases arch with
+  | intro m hm => 
+
+
+  let n₀ := 2^(Nat.succ m)
+  use n₀ 
+  intro n hn 
+  -- simp
+  have hle : 2^(Nat.succ m) ≤ n := hn 
+  have n₀pos : 0 < 2^(Nat.succ m) := Fin.size_positive'
+  have h : 0 ≤ 2^(Nat.succ m) := by exact Nat.zero_le (2 ^ Nat.succ m)
+  have hexp : 2^(2^(Nat.succ m)) ≤ 2^n := (Nat.pow_le_iff_le_right Nat.AtLeastTwo.prop).mpr hn
+  have hlec : (2^(Nat.succ m))^c ≤ n^c := by 
+    apply Iff.mpr (Real.rpow_le_rpow_iff ?hx ?hy hc) ?_
+    norm_cast
+    norm_cast 
+    exact le_trans h hn
+    norm_cast
+  have hcomp : (2 ^ ↑(Nat.succ m)) ^ c < 2 ^ 2 ^ Nat.succ m := by 
+    have h : (2 ^ ↑(Nat.succ m)) ^ c = (2 ^ (c*↑(Nat.succ m))) := by 
+      rw [← Real.rpow_mul zero_le_two]
+      ring_nf
+    rw [h]
+    apply Real.rpow_lt_rpow_of_exponent_lt one_lt_two
     sorry
+  -- have h : n^c  < 2^(2^(Nat.succ m)) := by 
+  --   norm_num 
+  --   sorry
+  
+
+
+  sorry
+
+#check Real.rpow_lt_rpow_iff
+#check Real.rpow_le_rpow_of_exponent_le
+#check Real.rpow_lt_rpow_of_exponent_lt
+-- example (x y z: ℝ ) (hx : 0 < x) (hy : 0 < y) (hz : 0 < z) (hl : y < z) : x^y < x^z := sorry
   
