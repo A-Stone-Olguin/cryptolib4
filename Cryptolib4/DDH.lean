@@ -36,10 +36,10 @@ def DDH1 : Pmf (ZMod 2) :=
     pure b
 
 -- -- From Lupo: DDH0(D) is the event that D outputs 1 upon receiving (g^x, g^y, g^(xy))
-local notation "Pr[DDH0("D")]" => (DDH0 G g g_gen_G q G_card_q D 1 : ℝ)
+local notation "Pr[DDH0("D")]" => DDH0 G g q D 1
 -- -- From Lupo: DDH1(D) is the event that D outputs 1 upon receiving (g^x, g^y, g^z)
-local notation "Pr[DDH1("D")]" => (DDH1 G g g_gen_G q G_card_q D 1 : ℝ)
+local notation "Pr[DDH1("D")]" => DDH1 G g q D 1
 
--- def DDH (ε : nnreal) : Prop := abs (Pr[DDH0(D)] - Pr[DDH1(D)]) ≤ ε
+def DDH (ε : ENNReal) : Prop := abs (Pr[DDH0(D)] - Pr[DDH1(D)]) ≤ ε
 
 end DDH
