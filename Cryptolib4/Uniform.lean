@@ -33,8 +33,8 @@ lemma uniform_group_prob :
   have h1 : (uniform_group G)= (λ (a : G) => 
     (Multiset.count a (@Fintype.elems G).val : ENNReal) / Multiset.card (@Fintype.elems G).val) := by 
     ext
-    simp [uniform_group, Pmf.ofMultiset]
-    sorry
+    simp [uniform_group]
+    congr
   have h2 : (uniform_group G) g = 
     Multiset.count g (@Fintype.elems G).val / Multiset.card (@Fintype.elems G).val := congr_fun h1 g
   rw [h2]
