@@ -52,6 +52,11 @@ do
   pure (1 + b + b')  
 
 -- From Lupo: SSG(A) denotes the event that A wins the semantic security game
-local notation "Pr[SSG("A")]" => (SSG keygen encrypt A1 A2 1 : ℝ)
+local notation "Pr[SSG(A)]" => (SSG keygen encrypt A1 A2 1)
+#check Pr[SSG(A)].toReal
+example  :(λ _ => ENNReal) 1 → ℝ := by 
+  -- exact fun a => ENNReal.toReal a
+  intro f 
+  exact ENNReal.toReal f
 
--- def pke_semantic_security (ε : ENNReal) : Prop := abs ((SSG keygen encrypt A1 A2 : ℝ) - 1/2) ≤ ε 
+-- def pke_semantic_security (ε : ENNReal) : Prop := abs (Pr[SSG(A)] - 1/2) ≤ ε 
