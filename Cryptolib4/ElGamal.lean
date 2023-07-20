@@ -62,9 +62,71 @@ theorem elgamal_correctness : pke_correctness (keygen G g q) (encrypt G g q) (de
   bind_skip_const 
   simp_rw [decrypt_eq_m]
   simp 
-  
+
 /- 
   -----------------------------------------------------------
   Proof of semantic security of ElGamal
   -----------------------------------------------------------
 -/
+
+def D (gx gy gz : G) : Pmf (ZMod 2) := 
+  do 
+    let m ← A1 gx 
+    let b ← uniform_2
+    let mb ← pure (if b = 0 then m.1 else m.2.1)
+    let b' ← A2 gy (gz * mb) m.2.2
+    pure (1 + b + b')  
+
+/- From Lupo: 
+  The probability of the attacker (i.e. the composition of A1 and A2) 
+  winning the semantic security game (i.e. guessing the correct bit), 
+  w.r.t. ElGamal is equal to the probability of D winning the game DDH0. 
+-/
+theorem SSG_DDH0 : SSG (keygen G g q) (encrypt G g q) A1 (A2' G A_state A2) = DDH0 G g q (D G A_state A1 A2) := by 
+  simp only [SSG, DDH0, bind, keygen, encrypt, D]
+  simp_rw [Pmf.bind_bind (uniform_zmod q)]
+  bind_skip
+  simp [pure]
+  simp_rw [Pmf.bind_comm (uniform_zmod q)]
+  simp only [A2']
+  repeat bind_skip
+  rw [pow_mul g _ _]
+
+def Game1 : Pmf (ZMod 2) := 
+  do 
+    let x ← uniform_zmod q 
+    let y ← uniform_zmod q
+    let m ← A1 (g^x.val)
+    let b ← uniform_2 
+    let ζ ← (do let z ← uniform_zmod q; let mb ← pure (if b = 0 then m.1 else m.2.1); pure (g^z.val * mb))
+    let b' ← A2 (g^y.val) ζ m.2.2 
+    pure (1 + b + b')  
+
+def Game2 : Pmf (ZMod 2) := 
+  do 
+    let x ← uniform_zmod q 
+    let y ← uniform_zmod q
+    let m ← A1 (g^x.val)
+    let b ← uniform_2 
+    let ζ ← (do let z ← uniform_zmod q; pure (g^z.val))
+    let b' ← A2 (g^y.val) ζ m.2.2 
+    pure (1 + b + b') 
+
+/- From Lupo: 
+  The probability of the attacker (i.e. the composition of A1 and A2) 
+  winning Game1 (i.e. guessing the correct bit) is equal to the 
+  probability of D winning the game DDH1. 
+-/
+theorem Game1_DDH1 : Game1 G g q A_state A1 A2 = DDH1 G g q (D G A_state A1 A2) := by 
+  simp only [DDH1, Game1, bind, D]
+  repeat bind_skip 
+  simp_rw [Pmf.bind_bind (A1 _)]
+  rw [Pmf.bind_comm (uniform_zmod q)]
+  simp_rw [Pmf.bind_bind (uniform_zmod q)]
+  repeat bind_skip 
+  rw [Pmf.bind_comm (uniform_2)]
+  bind_skip
+  rw [Pmf.bind_bind (uniform_2)]
+  simp_rw [Pmf.bind_bind]
+  repeat bind_skip 
+  simp [pure]
