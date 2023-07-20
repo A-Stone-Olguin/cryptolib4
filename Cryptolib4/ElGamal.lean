@@ -13,9 +13,9 @@ import Cryptolib4.Uniform
 
 noncomputable section ElGamal 
 
-variable (G : Type) [Fintype G] [CommGroup G] [DecidableEq G] 
+variable (G : Type) [inst_1 : Fintype G] [inst_2 : CommGroup G] [inst_3 : DecidableEq G] 
            (g : G) (g_gen_G : ∀ (x : G), x ∈ Subgroup.zpowers g)
-           (q : ℕ) [Fact (0 < q)] [NeZero q](G_card_q : Fintype.card G = q) 
+           (q : ℕ) [inst_4 : Fact (0 < q)] [inst_5 : NeZero q](G_card_q : Fintype.card G = q) 
            (A_state : Type) (A1 : G → Pmf (G × G × A_state))
            (A2 : G → G → A_state → Pmf (ZMod 2))
 
@@ -130,3 +130,31 @@ theorem Game1_DDH1 : Game1 G g q A_state A1 A2 = DDH1 G g q (D G A_state A1 A2) 
   simp_rw [Pmf.bind_bind]
   repeat bind_skip 
   simp [pure]
+
+#check ZMod.val_cast_of_lt
+lemma exp_bij : Function.Bijective (λ (z : ZMod q) => g^z.val) := by 
+  apply (Fintype.bijective_iff_surjective_and_card _).mpr 
+  apply And.intro
+  · -- surjective 
+    intro gz 
+    have hz := Subgroup.mem_zpowers_iff.mp (g_gen_G gz)
+    cases hz with
+    | intro z hz => 
+    cases z with
+    | ofNat z => 
+      let zq := z % q 
+      use zq 
+      have h1 : (λ (z : ZMod q) => g^z.val) zq = g^ (zq : ZMod q).val := rfl 
+      rw [h1]
+      rw [ZMod.val_cast_of_lt] 
+      · 
+        simp_rw [← hz]
+        have hnat : g^ Int.ofNat z = g^z := by simp
+        rw [hnat, ← Nat.mod_add_div z q, pow_add, pow_mul, ← G_card_q]
+        simp [pow_card_eq_one]
+      · exact Nat.mod_lt z inst_4.out
+    | negSucc z => 
+      sorry
+  · -- injective 
+    rw [G_card_q]
+    exact ZMod.card q
