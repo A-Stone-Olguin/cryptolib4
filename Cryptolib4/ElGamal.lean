@@ -131,7 +131,6 @@ theorem Game1_DDH1 : Game1 G g q A_state A1 A2 = DDH1 G g q (D G A_state A1 A2) 
   repeat bind_skip 
   simp [pure]
 
-#check ZMod.val_cast_of_lt
 lemma exp_bij : Function.Bijective (λ (z : ZMod q) => g^z.val) := by 
   apply (Fintype.bijective_iff_surjective_and_card _).mpr 
   apply And.intro
@@ -154,7 +153,54 @@ lemma exp_bij : Function.Bijective (λ (z : ZMod q) => g^z.val) := by
         simp [pow_card_eq_one]
       · exact Nat.mod_lt z inst_4.out
     | negSucc z => 
-      sorry
+      let zq := (q - (z + 1) % q) % q 
+      use zq 
+      have h1 : (λ (z : ZMod q) => g ^ z.val) zq = g ^ (zq : ZMod q).val := rfl 
+      rw [h1]
+      rw [ZMod.val_cast_of_lt] 
+      · 
+        simp at hz
+        rw [← hz]
+        rw [pow_eq_mod_card (z + 1)]
+        rw [G_card_q]
+        rw [inv_pow_eq_card_sub_pow G g _]
+        · 
+          rw [G_card_q]
+          rw [← Nat.mod_add_div (q - (z + 1) % q) q]
+          rw [pow_add]
+          rw [pow_mul]
+          have h2  : g ^ ((q - (z + 1) % q) % q) * (g ^ q) ^ ((q - (z + 1) % q) / q) =
+             g ^ ((q - (z + 1) % q) % q) * (g ^ (Fintype.card G)) ^ ((q - (z + 1) % q) / q) := by rw [← G_card_q]
+          rw [h2]
+          simp [pow_card_eq_one]
+        · 
+          rw [G_card_q] 
+          apply le_of_lt
+          exact Nat.mod_lt _ inst_4.out
+      · exact Nat.mod_lt _ inst_4.out
   · -- injective 
     rw [G_card_q]
     exact ZMod.card q
+
+lemma exp_mb_bij (mb : G) : Function.Bijective (λ (z : ZMod q) => g ^z.val * mb) := by 
+  have h : (λ (z : ZMod q)=> g ^ z.val * mb) = 
+    ((λ (m : G)=> (m * mb)) ∘ (λ (z : ZMod q)=> g ^ z.val)) := rfl 
+  rw [h]
+  apply Function.Bijective.comp 
+  · --  (λ (m : G), (m * mb)) bijective
+    apply (Fintype.bijective_iff_injective_and_card _).mpr
+    apply And.intro 
+    · 
+      intro x a hxa 
+      simp at hxa 
+      exact hxa
+    · rfl
+  · -- (λ (z : zmod q), g ^ z.val) bijective
+    exact exp_bij G g g_gen_G q G_card_q
+
+#check Function.bijective_iff_has_inverse.mp (exp_bij G g g_gen_G q G_card_q)
+lemma G1_G2_lemma1 (x : G) (exp : ZMod q → G) (exp_bij : Function.Bijective exp) : 
+  Σ' (z : ZMod q), ite (x = exp z) (1 : ENNReal) 0 = 1 := by 
+
+  have inv := Function.bijective_iff_has_inverse.mp exp_bij
+  sorry
