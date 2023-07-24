@@ -38,7 +38,6 @@ def encrypt (pk m : G) : Pmf (G × G) :=
 -- cipher text returned from encrypt, and `c.2` is the 
 -- second value returned from encrypt
 def decrypt (x : ZMod q) (c : G × G) : G := (c.2 / (c.1^x.val)) 
-#check decrypt
 
 /- 
   -----------------------------------------------------------
@@ -198,9 +197,51 @@ lemma exp_mb_bij (mb : G) : Function.Bijective (λ (z : ZMod q) => g ^z.val * mb
   · -- (λ (z : zmod q), g ^ z.val) bijective
     exact exp_bij G g g_gen_G q G_card_q
 
-#check Function.bijective_iff_has_inverse.mp (exp_bij G g g_gen_G q G_card_q)
 lemma G1_G2_lemma1 (x : G) (exp : ZMod q → G) (exp_bij : Function.Bijective exp) : 
-  Σ' (z : ZMod q), ite (x = exp z) (1 : ENNReal) 0 = 1 := by 
+  (∑' (z : ZMod q), ite (x = exp z) (1 : ENNReal) 0) = 1 := by 
 
-  have inv := Function.bijective_iff_has_inverse.mp exp_bij
-  sorry
+    have inv := Function.bijective_iff_has_inverse.mp exp_bij
+    cases inv with
+    | intro exp_inv inv_h => 
+      have bij_eq : ∀ (z : ZMod q), (x = exp z) = (z = exp_inv x) := by 
+        intro z 
+        ext
+        apply Iff.intro 
+        · 
+          intro h 
+          rw [← inv_h.left z]
+          exact (congr_arg exp_inv h).symm
+        ·
+          intro h 
+          rw [← inv_h.right x]
+          exact (congr_arg exp h).symm
+      simp_rw [bij_eq]
+      simp
+
+#check G1_G2_lemma1 G q _ _
+lemma G1_G2_lemma2 (mb : G) :
+  (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb)) = 
+  (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val)) := by
+    ext x 
+    simp [pure]
+    simp_rw [uniform_zmod_prob]
+    simp [ENNReal.tsum_mul_left]
+    apply congrArg
+    let f : ZMod q → G := λ i => g^ZMod.val i * mb 
+    let h : ZMod q → G := λ i => g^ZMod.val i
+    have bij_mb := exp_mb_bij G g g_gen_G q G_card_q mb
+    have bij : Function.Bijective h := by exact exp_bij G g g_gen_G q G_card_q 
+    have hr:= G1_G2_lemma1 G q x h bij
+    have hl := G1_G2_lemma1 G q x f bij_mb
+    congr 
+    ext i 
+    -- have h : 
+
+    sorry
+
+lemma G1_G2_lemma3 (m : Pmf G) :
+  m.bind (λ (mb : G)=> (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb))) = 
+  (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val)) := by 
+    simp_rw [G1_G2_lemma2 _]
+    bind_skip_const 
+    congr
