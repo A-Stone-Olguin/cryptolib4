@@ -207,11 +207,11 @@ lemma G1_G2_lemma1 (x : G) (exp : ZMod q → G) (exp_bij : Function.Bijective ex
         intro z 
         ext
         apply Iff.intro 
-        · 
+        · -- Left to right
           intro h 
           rw [← inv_h.left z]
           exact (congr_arg exp_inv h).symm
-        ·
+        · -- Right to left
           intro h 
           rw [← inv_h.right x]
           exact (congr_arg exp h).symm
@@ -219,25 +219,92 @@ lemma G1_G2_lemma1 (x : G) (exp : ZMod q → G) (exp_bij : Function.Bijective ex
       simp
 
 #check G1_G2_lemma1 G q _ _
+#check funext
+#check tsum
+
+-- lemma tsum_ext (f g : ZMod q → ENNReal) : ((∑' (x : ZMod q), f x) = (∑' (x : ZMod q), g x)) ↔ f = g := by 
+--   apply Iff.intro 
+--   · 
+--     intro hsum 
+--     funext x 
+--     repeat rw [tsum] at hsum 
+--     split_ifs at hsum with h1 h2
+--     ·
+--       simp_rw [Classical.choose] at hsum
+--       simp_rw [Classical.indefiniteDescription] at hsum
+--       -- apply?
+--       -- cases hsum
+--       sorry 
+--     repeat simp_all
+--   · 
+--     intro h 
+--     repeat rw [tsum]
+--     split_ifs with h1 h2
+--     · 
+--       congr 
+--       rw [h]
+--     repeat simp_all
+
 lemma G1_G2_lemma2 (mb : G) :
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb)) = 
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val)) := by
-    ext x 
-    simp [pure]
-    simp_rw [uniform_zmod_prob]
-    simp [ENNReal.tsum_mul_left]
-    apply congrArg
-    let f : ZMod q → G := λ i => g^ZMod.val i * mb 
-    let h : ZMod q → G := λ i => g^ZMod.val i
-    have bij_mb := exp_mb_bij G g g_gen_G q G_card_q mb
-    have bij : Function.Bijective h := by exact exp_bij G g g_gen_G q G_card_q 
-    have hr:= G1_G2_lemma1 G q x h bij
-    have hl := G1_G2_lemma1 G q x f bij_mb
-    congr 
-    ext i 
-    -- have h : 
-
     sorry
+    -- ext x 
+    -- let f : ZMod q → G := λ i => g^ZMod.val i * mb 
+    -- let h : ZMod q → G := λ i => g^ZMod.val i
+    -- have bij_mb := exp_mb_bij G g g_gen_G q G_card_q mb
+    -- have bij : Function.Bijective h := by exact exp_bij G g g_gen_G q G_card_q 
+    -- have hr:= λ (x : G) => G1_G2_lemma1 G q x h bij
+    -- have hl := λ (x : G) => G1_G2_lemma1 G q x f bij_mb
+
+    -- -- have heq : (λ (x : G) => ((∑' (z : ZMod q), if x = h z then 1 else 0) : ENNReal)) = ( λ(x : G) => (∑' (z : ZMod q), if x = f z then 1 else 0)) := by 
+    -- --   simp
+    -- --   ext x
+    -- --   trans
+    -- --   exact hr x
+    -- --   exact (hl x).symm
+    -- have heq2 : ∀ (x : G), (((∑' (z : ZMod q), if x = h z then 1 else 0) : ENNReal) = (∑' (z : ZMod q), if x = f z then 1 else 0)) := by 
+    --   intro x 
+    --   trans
+    --   exact hr x
+    --   exact (hl x).symm
+    -- repeat rw [← ENNReal.tsum_apply ] at heq
+    -- -- have h_ext := funext heq2
+    -- ext x 
+    -- -- specialize heq2 x 
+
+    -- congr 
+    -- funext z 
+
+    
+    -- -- congr
+    -- -- funext
+    -- simp [Pmf.bind]
+    -- simp [pure, Pmf.pure, ENNReal.tsum_mul_left]
+    -- simp_rw [uniform_zmod_prob]
+    -- simp_rw [Pmf.pure_apply]
+    -- congr 
+    -- funext a
+    -- specialize heq2 a 
+
+    -- rw [tsum_def] at heq2
+    -- split_ifs at heq2
+    -- -- split_ifs at heq2
+
+
+    -- split_ifs with h1 h2 h3
+    -- · rfl 
+    -- · 
+    --   sorry 
+    -- · 
+    --   exfalso 
+    --   apply h1 
+    --   simp at heq2
+    --   sorry 
+    -- ·
+    --   rfl  
+#check ENNReal.tsum_apply
+#check tsum_apply
 
 lemma G1_G2_lemma3 (m : Pmf G) :
   m.bind (λ (mb : G)=> (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb))) = 
@@ -245,3 +312,72 @@ lemma G1_G2_lemma3 (m : Pmf G) :
     simp_rw [G1_G2_lemma2 _]
     bind_skip_const 
     congr
+
+theorem Game1_Game2 : Game1 G g q A_state A1 A2 = Game2 G g q A_state A1 A2 := by 
+  -- unfold Game1
+  -- simp [Game1]
+  simp only [Game1, Game2]
+  -- simp [pure, Pmf.pure]
+  -- funext
+  bind_skip
+  bind_skip 
+  bind_skip 
+  bind_skip
+  simp [bind, Pmf.bind_pure, Pmf.bind_bind]
+  simp_rw [Pmf.bind_comm (uniform_zmod q)]
+  -- rw [G1_G2_lemma3]
+  sorry
+
+#check Subtype.coe_mk
+lemma G2_uniform_lemma (b' : ZMod 2) : 
+  uniform_2.bind (λ(b : ZMod 2)=> pure (1 + b + b')) = uniform_2 := by 
+
+    fin_cases b'
+    ·
+      ring_nf
+      ext 
+      have a : ZMod 2 := by assumption
+      simp [uniform_2]
+      -- rw [uniform_zmod_prob _]
+      simp_rw [uniform_zmod_prob] 
+      simp [ENNReal.tsum_mul_left]
+      have zmod_eq_comm : ∀(x : ZMod 2), (a = 1+ x) = (x = 1 + a) := by
+        intro x 
+        fin_cases a <;> fin_cases x <;> simp
+      have h : (∑' (x : ZMod 2), (pure (1 + x) : Pmf (ZMod 2)) a) = 1 := by 
+        -- simp [ENNReal.tsum_coe_eq]
+        simp [pure, Pmf.pure]
+        simp [Pmf.pure]
+        simp [pure, Pmf.pure]
+        simp_rw [zmod_eq_comm]
+        sorry
+      sorry
+    · 
+      sorry
+
+#check Game2 G g q A_state A1 A2 
+theorem Game2_uniform : Game2 G g q A_state A1 A2  = uniform_2 := by
+  simp [Game2, bind]
+  bind_skip_const
+  bind_skip_const
+  bind_skip_const
+  rw [Pmf.bind_comm uniform_2]
+  simp_rw [Pmf.bind_comm uniform_2]
+  bind_skip_const
+  bind_skip_const
+  bind_skip_const 
+  exact G2_uniform_lemma _
+
+variable (ε: ENNReal)
+#check (uniform_2)
+#check uniform_zmod 2 1
+
+theorem elgamal_semantic_security (DDH_G : DDH G g q (D G A_state A1 A2) ε) :
+  pke_semantic_security (keygen G g q) (encrypt G g q) A1 (A2' G A_state A2) ε := by
+    simp only [pke_semantic_security]
+    rw [SSG_DDH0]
+    -- have h : (uniform_2) 1 = (1/2 : ℝ) := by 
+      
+    --   sorry 
+    -- rw 
+    sorry 
