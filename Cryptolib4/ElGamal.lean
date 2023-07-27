@@ -255,29 +255,21 @@ lemma G1_G2_lemma3 (m : Pmf G) :
     bind_skip_const 
     congr
 
+/- From Lupo:
+  The probability of the attacker (i.e. the composition of A1 and A2) 
+  winning Game1 (i.e. guessing the correct bit) is equal to the 
+  probability of the attacker winning Game2.
+-/
+#check G1_G2_lemma3 G g g_gen_G q G_card_q _ 
 theorem Game1_Game2 : Game1 G g q A_state A1 A2 = Game2 G g q A_state A1 A2 := by 
-  -- unfold Game1
-  -- simp [Game1]
   simp only [Game1, Game2]
-  -- simp [pure, Pmf.pure]
-  -- funext
   bind_skip
-  bind_skip 
-  bind_skip 
   bind_skip
-  simp [bind]
-  simp [pure]
-  simp_rw [Pmf.bind_pure]
-  simp_rw [← Pmf.bind_bind]
-  simp_rw [Pmf.bind_comm (uniform_zmod q)]
-
-  
-  -- rw [← Pmf.bind_pure]
-  -- rw [Pmf.bind_pure]
-  -- simp [bind, Pmf.bind_pure, Pmf.bind_bind]
-  -- simp_rw [Pmf.bind_comm (uniform_zmod q)]
-  -- rw [G1_G2_lemma3]
-  sorry
+  bind_skip
+  bind_skip
+  simp [bind, -Pmf.bind_pure, -Pmf.bind_bind]
+  simp_rw [Pmf.bind_comm (uniform_zmod q)] 
+  rw [G1_G2_lemma3 G g g_gen_G q G_card_q _ ]
 
 #check Subtype.coe_mk
 lemma G2_uniform_lemma (b' : ZMod 2) : 
@@ -336,6 +328,6 @@ theorem elgamal_semantic_security (DDH_G : DDH G g q (D G A_state A1 A2) ε) :
       norm_cast
     rw [← h]
     rw [← Game2_uniform G g q A_state A1 A2]
-    rw [← Game1_Game2]
+    rw [← Game1_Game2 G g g_gen_G q G_card_q A_state A1 A2]
     rw [Game1_DDH1]
     exact DDH_G
