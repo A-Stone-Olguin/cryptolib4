@@ -225,68 +225,33 @@ lemma G1_G2_lemma1 (x : G) (exp : ZMod q → G) (exp_bij : Function.Bijective ex
 lemma G1_G2_lemma2 (mb : G) :
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb)) = 
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val)) := by
-    sorry
-    -- ext x 
-    -- let f : ZMod q → G := λ i => g^ZMod.val i * mb 
-    -- let h : ZMod q → G := λ i => g^ZMod.val i
-    -- have bij_mb := exp_mb_bij G g g_gen_G q G_card_q mb
-    -- have bij : Function.Bijective h := by exact exp_bij G g g_gen_G q G_card_q 
-    -- have hr:= λ (x : G) => G1_G2_lemma1 G q x h bij
-    -- have hl := λ (x : G) => G1_G2_lemma1 G q x f bij_mb
+    simp [Pmf.bind]
+    simp_rw [uniform_zmod_prob]
+    ext x
+    simp [pure, Pmf.pure, ENNReal.tsum_mul_left, FunLike.coe]
+    apply congrArg
+    norm_cast
+    simp
 
-    -- -- have heq : (λ (x : G) => ((∑' (z : ZMod q), if x = h z then 1 else 0) : ENNReal)) = ( λ(x : G) => (∑' (z : ZMod q), if x = f z then 1 else 0)) := by 
-    -- --   simp
-    -- --   ext x
-    -- --   trans
-    -- --   exact hr x
-    -- --   exact (hl x).symm
-    -- have heq2 : ∀ (x : G), (((∑' (z : ZMod q), if x = h z then 1 else 0) : ENNReal) = (∑' (z : ZMod q), if x = f z then 1 else 0)) := by 
-    --   intro x 
-    --   trans
-    --   exact hr x
-    --   exact (hl x).symm
-    -- repeat rw [← ENNReal.tsum_apply ] at heq
-    -- -- have h_ext := funext heq2
-    -- ext x 
-    -- -- specialize heq2 x 
-
-    -- congr 
-    -- funext z 
-
-    
-    -- -- congr
-    -- -- funext
-    -- simp [Pmf.bind]
-    -- simp [pure, Pmf.pure, ENNReal.tsum_mul_left]
-    -- simp_rw [uniform_zmod_prob]
-    -- simp_rw [Pmf.pure_apply]
-    -- congr 
-    -- funext a
-    -- specialize heq2 a 
-
-    -- rw [tsum_def] at heq2
-    -- split_ifs at heq2
-    -- -- split_ifs at heq2
-
-
-    -- split_ifs with h1 h2 h3
-    -- · rfl 
-    -- · 
-    --   sorry 
-    -- · 
-    --   exfalso 
-    --   apply h1 
-    --   simp at heq2
-    --   sorry 
-    -- ·
-    --   rfl  
-#check ENNReal.tsum_apply
-#check tsum_apply
+    let f : ZMod q → G := λ i => g^ZMod.val i * mb 
+    let h : ZMod q → G := λ i => g^ZMod.val i
+    have bij_mb := exp_mb_bij G g g_gen_G q G_card_q mb
+    have bij : Function.Bijective h := by exact exp_bij G g g_gen_G q G_card_q 
+    have hr:= λ (x : G) => G1_G2_lemma1 G q x h bij
+    have hl := λ (x : G) => G1_G2_lemma1 G q x f bij_mb
+    have heq : ∀ (x : G), (((∑' (z : ZMod q), if x = h z then 1 else 0) : ENNReal) = (∑' (z : ZMod q), if x = f z then 1 else 0)) := by 
+      intro x 
+      trans
+      exact hr x
+      exact (hl x).symm
+    specialize heq x
+    simp at heq
+    exact heq.symm
 
 lemma G1_G2_lemma3 (m : Pmf G) :
   m.bind (λ (mb : G)=> (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb))) = 
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val)) := by 
-    simp_rw [G1_G2_lemma2 _]
+    simp_rw [G1_G2_lemma2 G g g_gen_G q G_card_q _]
     bind_skip_const 
     congr
 
