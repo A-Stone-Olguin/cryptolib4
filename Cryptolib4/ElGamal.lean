@@ -218,10 +218,6 @@ lemma G1_G2_lemma1 (x : G) (exp : ZMod q → G) (exp_bij : Function.Bijective ex
       simp_rw [bij_eq]
       simp
 
-#check G1_G2_lemma1 G q _ _
-#check funext
-#check tsum
-
 lemma G1_G2_lemma2 (mb : G) :
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb)) = 
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val)) := by
@@ -260,7 +256,6 @@ lemma G1_G2_lemma3 (m : Pmf G) :
   winning Game1 (i.e. guessing the correct bit) is equal to the 
   probability of the attacker winning Game2.
 -/
-#check G1_G2_lemma3 G g g_gen_G q G_card_q _ 
 theorem Game1_Game2 : Game1 G g q A_state A1 A2 = Game2 G g q A_state A1 A2 := by 
   simp only [Game1, Game2]
   bind_skip
@@ -271,34 +266,40 @@ theorem Game1_Game2 : Game1 G g q A_state A1 A2 = Game2 G g q A_state A1 A2 := b
   simp_rw [Pmf.bind_comm (uniform_zmod q)] 
   rw [G1_G2_lemma3 G g g_gen_G q G_card_q _ ]
 
-#check Subtype.coe_mk
+
 lemma G2_uniform_lemma (b' : ZMod 2) : 
   uniform_2.bind (λ(b : ZMod 2)=> pure (1 + b + b')) = uniform_2 := by 
 
     fin_cases b'
     ·
       ring_nf
-      ext 
-      have a : ZMod 2 := by assumption
+      ext; rename ZMod 2 => a
       simp [uniform_2]
-      -- rw [uniform_zmod_prob _]
       simp_rw [uniform_zmod_prob] 
       simp [ENNReal.tsum_mul_left]
       have zmod_eq_comm : ∀(x : ZMod 2), (a = 1+ x) = (x = 1 + a) := by
         intro x 
         fin_cases a <;> fin_cases x <;> simp
       have h : (∑' (x : ZMod 2), (pure (1 + x) : Pmf (ZMod 2)) a) = 1 := by 
-        -- simp [ENNReal.tsum_coe_eq]
-        simp [pure, Pmf.pure]
-        simp [Pmf.pure]
-        simp [pure, Pmf.pure]
+        simp [pure, Pmf.pure, FunLike.coe]
         simp_rw [zmod_eq_comm]
-        sorry
-      sorry
+        simp 
+      rw [h]
+      simp
     · 
-      sorry
+      ring_nf
+      ext; rename ZMod 2 => a 
+      simp [uniform_2, FunLike.coe]
+      have h : uniform_2.bind (λ (b : ZMod 2) => pure (0 + b)) = uniform_2 := by simp [pure]
+      ring_nf
+      have h_zmod : (2 : ZMod 2) = 0 := rfl 
+      rw [h_zmod]
+      exact congrFun (congrArg Subtype.val h) a
 
-#check Game2 G g q A_state A1 A2 
+/- From Lupo:
+  The probability of the attacker (i.e. the composition of A1 and A2) 
+  winning Game2 (i.e. guessing the correct bit) is equal to a coin flip.
+-/
 theorem Game2_uniform : Game2 G g q A_state A1 A2  = uniform_2 := by
   simp [Game2, bind]
   bind_skip_const
@@ -313,15 +314,17 @@ theorem Game2_uniform : Game2 G g q A_state A1 A2  = uniform_2 := by
 
 variable (ε: ENNReal)
 
+/- From Lupo:
+  The advantage of the attacker (i.e. the composition of A1 and A2) in
+  the semantic security game `ε` is exactly equal to the advantage of D in 
+  the Diffie-Hellman game. Therefore, assumining the decisional Diffie-Hellman
+  assumption holds for the group `G`, we conclude `ε` is negligble, and 
+  therefore ElGamal is, by definition, semantically secure.
+-/
 theorem elgamal_semantic_security (DDH_G : DDH G g q (D G A_state A1 A2) ε) :
   pke_semantic_security (keygen G g q) (encrypt G g q) A1 (A2' G A_state A2) ε := by
     simp only [pke_semantic_security]
     rw [SSG_DDH0]
-    -- have h : ((uniform_2) 1).toReal = 1/2 := by 
-    --   simp only [uniform_2]
-    --   rw [uniform_zmod_prob 1]
-    --   norm_cast
-    --   sorry 
     have h : uniform_2 1 = 1/2 := by 
       simp only [uniform_2]
       rw [uniform_zmod_prob 1]
@@ -331,3 +334,5 @@ theorem elgamal_semantic_security (DDH_G : DDH G g q (D G A_state A1 A2) ε) :
     rw [← Game1_Game2 G g g_gen_G q G_card_q A_state A1 A2]
     rw [Game1_DDH1]
     exact DDH_G
+
+end ElGamal
