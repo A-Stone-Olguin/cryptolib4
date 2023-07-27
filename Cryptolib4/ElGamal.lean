@@ -222,29 +222,6 @@ lemma G1_G2_lemma1 (x : G) (exp : ZMod q → G) (exp_bij : Function.Bijective ex
 #check funext
 #check tsum
 
--- lemma tsum_ext (f g : ZMod q → ENNReal) : ((∑' (x : ZMod q), f x) = (∑' (x : ZMod q), g x)) ↔ f = g := by 
---   apply Iff.intro 
---   · 
---     intro hsum 
---     funext x 
---     repeat rw [tsum] at hsum 
---     split_ifs at hsum with h1 h2
---     ·
---       simp_rw [Classical.choose] at hsum
---       simp_rw [Classical.indefiniteDescription] at hsum
---       -- apply?
---       -- cases hsum
---       sorry 
---     repeat simp_all
---   · 
---     intro h 
---     repeat rw [tsum]
---     split_ifs with h1 h2
---     · 
---       congr 
---       rw [h]
---     repeat simp_all
-
 lemma G1_G2_lemma2 (mb : G) :
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb)) = 
   (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val)) := by
@@ -323,8 +300,17 @@ theorem Game1_Game2 : Game1 G g q A_state A1 A2 = Game2 G g q A_state A1 A2 := b
   bind_skip 
   bind_skip 
   bind_skip
-  simp [bind, Pmf.bind_pure, Pmf.bind_bind]
+  simp [bind]
+  simp [pure]
+  simp_rw [Pmf.bind_pure]
+  simp_rw [← Pmf.bind_bind]
   simp_rw [Pmf.bind_comm (uniform_zmod q)]
+
+  
+  -- rw [← Pmf.bind_pure]
+  -- rw [Pmf.bind_pure]
+  -- simp [bind, Pmf.bind_pure, Pmf.bind_bind]
+  -- simp_rw [Pmf.bind_comm (uniform_zmod q)]
   -- rw [G1_G2_lemma3]
   sorry
 
@@ -369,15 +355,22 @@ theorem Game2_uniform : Game2 G g q A_state A1 A2  = uniform_2 := by
   exact G2_uniform_lemma _
 
 variable (ε: ENNReal)
-#check (uniform_2)
-#check uniform_zmod 2 1
 
 theorem elgamal_semantic_security (DDH_G : DDH G g q (D G A_state A1 A2) ε) :
   pke_semantic_security (keygen G g q) (encrypt G g q) A1 (A2' G A_state A2) ε := by
     simp only [pke_semantic_security]
     rw [SSG_DDH0]
-    -- have h : (uniform_2) 1 = (1/2 : ℝ) := by 
-      
+    -- have h : ((uniform_2) 1).toReal = 1/2 := by 
+    --   simp only [uniform_2]
+    --   rw [uniform_zmod_prob 1]
+    --   norm_cast
     --   sorry 
-    -- rw 
-    sorry 
+    have h : uniform_2 1 = 1/2 := by 
+      simp only [uniform_2]
+      rw [uniform_zmod_prob 1]
+      norm_cast
+    rw [← h]
+    rw [← Game2_uniform G g q A_state A1 A2]
+    rw [← Game1_Game2]
+    rw [Game1_DDH1]
+    exact DDH_G
