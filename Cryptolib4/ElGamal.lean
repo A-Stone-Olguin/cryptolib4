@@ -228,21 +228,9 @@ lemma G1_G2_lemma2 (mb : G) :
     apply congrArg
     norm_cast
     simp
-
-    let f : ZMod q → G := λ i => g^ZMod.val i * mb 
-    let h : ZMod q → G := λ i => g^ZMod.val i
-    have bij_mb := exp_mb_bij G g g_gen_G q G_card_q mb
-    have bij : Function.Bijective h := by exact exp_bij G g g_gen_G q G_card_q 
-    have hr:= λ (x : G) => G1_G2_lemma1 G q x h bij
-    have hl := λ (x : G) => G1_G2_lemma1 G q x f bij_mb
-    have heq : ∀ (x : G), (((∑' (z : ZMod q), if x = h z then 1 else 0) : ENNReal) = (∑' (z : ZMod q), if x = f z then 1 else 0)) := by 
-      intro x 
-      trans
-      exact hr x
-      exact (hl x).symm
-    specialize heq x
-    simp at heq
-    exact heq.symm
+    repeat rw [G1_G2_lemma1 G q x]
+    exact exp_bij G g g_gen_G q G_card_q
+    exact exp_mb_bij G g g_gen_G q G_card_q mb
 
 lemma G1_G2_lemma3 (m : Pmf G) :
   m.bind (λ (mb : G)=> (uniform_zmod q).bind (λ (z : ZMod q)=> pure (g^z.val * mb))) = 
