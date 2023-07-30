@@ -81,15 +81,16 @@ def D (gx gy gz : G) : Pmf (ZMod 2) :=
   winning the semantic security game (i.e. guessing the correct bit), 
   w.r.t. ElGamal is equal to the probability of D winning the game DDH0. 
 -/
-theorem SSG_DDH0 : SSG (keygen G g q) (encrypt G g q) A1 (A2' G A_state A2) = DDH0 G g q (D G A_state A1 A2) := by 
-  simp only [SSG, DDH0, bind, keygen, encrypt, D]
-  simp_rw [Pmf.bind_bind (uniform_zmod q)]
-  bind_skip
-  simp [pure]
-  simp_rw [Pmf.bind_comm (uniform_zmod q)]
-  simp only [A2']
-  repeat bind_skip
-  rw [pow_mul g _ _]
+theorem SSG_DDH0 : SSG (keygen G g q) (encrypt G g q) A1 (A2' G A_state A2) = 
+  DDH0 G g q (D G A_state A1 A2) := by 
+    simp only [SSG, DDH0, bind, keygen, encrypt, D]
+    simp_rw [Pmf.bind_bind (uniform_zmod q)]
+    bind_skip
+    simp [pure]
+    simp_rw [Pmf.bind_comm (uniform_zmod q)]
+    simp only [A2']
+    repeat bind_skip
+    rw [pow_mul g _ _]
 
 def Game1 : Pmf (ZMod 2) := 
   do 
@@ -169,7 +170,8 @@ lemma exp_bij : Function.Bijective (λ (z : ZMod q) => g^z.val) := by
           rw [pow_add]
           rw [pow_mul]
           have h2  : g ^ ((q - (z + 1) % q) % q) * (g ^ q) ^ ((q - (z + 1) % q) / q) =
-             g ^ ((q - (z + 1) % q) % q) * (g ^ (Fintype.card G)) ^ ((q - (z + 1) % q) / q) := by rw [← G_card_q]
+                     g ^ ((q - (z + 1) % q) % q) * (g ^ (Fintype.card G)) ^ ((q - (z + 1) % q) / q) 
+                     := by rw [← G_card_q]
           rw [h2]
           simp [pow_card_eq_one]
         · 
@@ -276,13 +278,13 @@ lemma G2_uniform_lemma (b' : ZMod 2) :
       simp
     · 
       ring_nf
-      ext; rename ZMod 2 => a 
+      ext
       simp [uniform_2, FunLike.coe]
       have h : uniform_2.bind (λ (b : ZMod 2) => pure (0 + b)) = uniform_2 := by simp [pure]
       ring_nf
       have h_zmod : (2 : ZMod 2) = 0 := rfl 
       rw [h_zmod]
-      exact congrFun (congrArg Subtype.val h) a
+      exact congrFun (congrArg Subtype.val h) _
 
 /- From Lupo:
   The probability of the attacker (i.e. the composition of A1 and A2) 
@@ -293,7 +295,6 @@ theorem Game2_uniform : Game2 G g q A_state A1 A2  = uniform_2 := by
   bind_skip_const
   bind_skip_const
   bind_skip_const
-  rw [Pmf.bind_comm uniform_2]
   simp_rw [Pmf.bind_comm uniform_2]
   bind_skip_const
   bind_skip_const

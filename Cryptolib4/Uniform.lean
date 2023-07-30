@@ -6,12 +6,8 @@ variable (G : Type) [Fintype G] [Group G] [DecidableEq G]
 
 noncomputable section
 
--- Instance doesn't transfer across import?
-instance : ∀ (n : ℕ), Fintype (Bitvec n) := by 
-  intro n; exact Vector.fintype
-
 def uniform_bitvec (n : ℕ) : Pmf (Bitvec n) := 
-  Pmf.ofMultiset (instForAllNatFintypeBitvec n).elems.val (Bitvec.multiset_ne_zero n)
+  Pmf.ofMultiset (@Fintype.elems (Bitvec n)).val (Bitvec.multiset_ne_zero n)
 
 def uniform_group : Pmf G := 
   Pmf.ofMultiset (@Fintype.elems G).val (Group.multiset_ne_zero G)
@@ -21,8 +17,18 @@ def uniform_group : Pmf G :=
 instance : Fact (0 < 2) where
   out := two_pos
 
--- We have that n is positive and not equal to zero...
-def uniform_zmod (n : ℕ) [Fact (0 < n)] [NeZero n] : Pmf (ZMod n) := uniform_group (ZMod n)
+instance (n : ℕ) [i : Fact (0 < n)] : NeZero n := NeZero.of_pos i.out
+
+instance (n : ℕ) [i : NeZero n] : Fact (0 < n) := by 
+  have h : n ≠ 0 := by exact NeZero.ne n
+  apply Iff.mpr fact_iff _
+  induction n with
+  | zero => contradiction
+  | succ n _ => exact Nat.succ_pos n 
+
+-- def uniform_zmod (n : ℕ) : Pmf (ZMod (Nat.succ n)) := uniform_group (ZMod (Nat.succ n))
+
+def uniform_zmod (n : ℕ) [NeZero n] : Pmf (ZMod n) := uniform_group (ZMod n)
 def uniform_2 : Pmf (ZMod 2) := uniform_zmod 2 
 
 -- Had to modify from NNReal to ENNReal
@@ -42,7 +48,7 @@ lemma uniform_group_prob :
   rw [h3]
   simp
 
-lemma uniform_zmod_prob {n : ℕ} [Fact (0 < n)] [NeZero n] : ∀ (a : ZMod n), (uniform_zmod n) a = 1/n := by
+lemma uniform_zmod_prob {n : ℕ} [NeZero n] : ∀ (a : ZMod n), (uniform_zmod n) a = 1/n := by
   intro a 
   simp [uniform_zmod]
   have h1 := uniform_group_prob (ZMod n) a

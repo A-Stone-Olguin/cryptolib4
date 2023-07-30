@@ -6,8 +6,6 @@ import Mathlib.Probability.ProbabilityMassFunction.Basic
 import Mathlib.Probability.ProbabilityMassFunction.Monad
 import Mathlib.Probability.ProbabilityMassFunction.Constructions
 
--- To Probability : Might not be needed
-
 noncomputable section 
 
 instance : Monad Pmf where
@@ -38,18 +36,16 @@ def IsCyclic.generator {G : Type} [Group G] [IsCyclic G] (g : G): Prop :=
 
 namespace Bitvec
 
-
 instance : ∀ (n : ℕ), Fintype (Bitvec n) := by 
   intro n; exact Vector.fintype
 
 lemma card (n : ℕ) : Fintype.card (Bitvec n) = 2^n := card_vector n
 
-lemma multiset_ne_zero (n : ℕ) : (instForAllNatFintypeBitvec n).elems.val ≠ 0 := by 
+lemma multiset_ne_zero (n : ℕ) : (@Fintype.elems (Bitvec n)).val ≠ 0 := by 
   apply (Multiset.card_pos).mp 
-  have h : Multiset.card ((instForAllNatFintypeBitvec n).elems.val) = 2^n := Bitvec.card n
+  have h : Multiset.card ((@Fintype.elems (Bitvec n)).val) = 2^n := Bitvec.card n
   rw [h]
   simp
-
 
 end Bitvec
 
@@ -57,9 +53,13 @@ end Bitvec
 namespace ZMod
 
 -- 0 < n fact not needed... will keep in case of future uses
-instance : ∀ (n : ℕ) [Fact (0 < n)], Group (ZMod n) := fun
+instance : ∀ (n : ℕ) [NeZero n], Group (ZMod n) := fun
   | .zero => Multiplicative.group
   | .succ _ => Multiplicative.group
+
+-- instance : ∀ (n : ℕ) [Fact (0 < n)], Group (ZMod n) := fun
+--   | .zero => Multiplicative.group
+--   | .succ _ => Multiplicative.group
 
 end ZMod
 
@@ -75,8 +75,6 @@ lemma exists_mod_add_div (a b : ℕ) : ∃ (m : ℕ), a = a % b + b * m := by
 variable (G : Type) [i1 : Fintype G] [i2 : Group G]
 namespace Group
 
-
-
 lemma multiset_ne_zero : (@Fintype.elems G).val ≠ 0 := by 
   have e : G := (i2.one)
   have h1 : e ∈ (@Fintype.elems G).val := Finset.mem_univ e 
@@ -89,11 +87,11 @@ end Group
 
 lemma inv_pow_eq_card_sub_pow (g : G) (m : ℕ) (H : m ≤ Fintype.card G) : 
   (g ^ m)⁻¹ = g^(Fintype.card G - m) := by 
-  have h : (g ^ m) * g ^ (Fintype.card G - m) = 1 := by 
-    rw [← pow_add]
-    rw [Nat.add_sub_of_le]
-    exact pow_card_eq_one
-    exact H
-  exact inv_eq_of_mul_eq_one_right h
+    have h : (g ^ m) * g ^ (Fintype.card G - m) = 1 := by 
+      rw [← pow_add]
+      rw [Nat.add_sub_of_le]
+      exact pow_card_eq_one
+      exact H
+    exact inv_eq_of_mul_eq_one_right h
 
 -- The pow_eq_mod_card lemma is already implemented in mathlib
